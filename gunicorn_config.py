@@ -12,7 +12,7 @@ backlog = 2048
 workers = 1  # Use only 1 worker to reduce memory usage
 worker_class = "sync"
 worker_connections = 1000
-timeout = 300  # Increase timeout to 5 minutes for model compilation
+timeout = 600  # Increase timeout to 10 minutes for model compilation on first request
 keepalive = 5
 
 # Logging
