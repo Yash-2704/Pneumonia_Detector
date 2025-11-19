@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pneumonia Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <main class="app">
+      <div class="backdrop">
+        <span class="orb orb-one" aria-hidden="true"></span>
+        <span class="orb orb-two" aria-hidden="true"></span>
+      </div>
+
+      <section class="card">
+        <header class="hero">
+          <span class="badge">AI-assisted triage</span>
+          <h1>Pneumonia Detection</h1>
+          <p class="subtitle">
+            Upload a chest X-ray image to evaluate the likelihood of pneumonia.
+          </p>
+        </header>
+
+        <div id="status" class="status-chip" role="status">
+          Waiting for an image...
+        </div>
+
+        <form id="upload-form">
+          <label for="file-input" class="file-label">
+            <div class="file-label__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="presentation" focusable="false" aria-hidden="true">
+                <path d="M12 16l4-5h-3V4h-2v7H8l4 5zm9 3H3v-2h18v2z" />
+              </svg>
+            </div>
+            <div class="file-label__body">
+              <strong id="file-name">Choose an image...</strong>
+              <span>PNG/JPG up to 10MB • anonymized studies only</span>
+            </div>
+            <input id="file-input" type="file" accept="image/*" required />
+          </label>
+
+          <button type="submit" id="submit-btn">
+            <span>Run Analysis</span>
+            <span aria-hidden="true" class="button-glow"></span>
+          </button>
+        </form>
+
+        <ul class="upload-steps">
+          <li>
+            <span class="step-index">1</span>
+            <div>
+              <p class="step-title">Select study</p>
+              <p class="step-copy">Upload a frontal chest X-ray (PNG or JPG).</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-index">2</span>
+            <div>
+              <p class="step-title">Verify details</p>
+              <p class="step-copy">Confirm that patient identifiers are removed.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-index">3</span>
+            <div>
+              <p class="step-title">Review output</p>
+              <p class="step-copy">Use the probabilities as decision support, not diagnosis.</p>
+            </div>
+          </li>
+        </ul>
+
+        <div id="result" class="hidden result-panel">
+          <div class="result-header">
+            <h2>Inference summary</h2>
+            <span class="result-tag">Latest run</span>
+          </div>
+          <div class="metric-grid">
+            <article class="metric highlight">
+              <p class="metric-label">Diagnosis</p>
+              <p class="diagnosis">
+                <span id="diagnosis-text"></span>
+              </p>
+            </article>
+            <article class="metric">
+              <p class="metric-label">Probability</p>
+              <p class="metric-value">
+                <span id="probability-text"></span>
+              </p>
+            </article>
+            <article class="metric">
+              <p class="metric-label">Confidence</p>
+              <p class="metric-value">
+                <span id="confidence-text"></span>
+              </p>
+            </article>
+            <article class="metric">
+              <p class="metric-label">Inference time</p>
+              <p class="metric-value">
+                <span id="time-text"></span> ms
+              </p>
+            </article>
+          </div>
+          <p class="meta">
+            Model output should be validated against radiologist interpretation.
+          </p>
+        </div>
+
+        <section class="callout">
+          <h3>Clinical note</h3>
+          <p>
+            This tool accelerates screening but does not replace a licensed clinician. Confirm
+            findings with radiology workflow before escalating care.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}" type="module"></script>
+  </body>
+</html>
