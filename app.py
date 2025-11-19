@@ -12,13 +12,8 @@ from tensorflow.keras.models import load_model
 # Optimize TensorFlow for production deployment
 # Disable GPU if not available (prevents CUDA errors)
 tf.config.set_visible_devices([], 'GPU')
-# Enable memory growth to prevent OOM
-physical_devices = tf.config.list_physical_devices('CPU')
-if physical_devices:
-    try:
-        tf.config.experimental.set_memory_growth(physical_devices[0], True)
-    except:
-        pass
+# Reduce memory usage - disable eager execution optimizations that use extra memory
+tf.config.run_functions_eagerly(False)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_ROOT, "pneumonia_resnet50_final.h5")
@@ -47,16 +42,9 @@ try:
     else:
         IMG_SIZE = DEFAULT_IMG_SIZE
     
-    # Warm up the model with a dummy prediction to compile it at startup
-    # This prevents timeout on first real request
-    print("Warming up model (this may take a minute)...")
-    try:
-        dummy_input = np.zeros((1, IMG_SIZE[0], IMG_SIZE[1], 3), dtype=np.float32)
-        _ = model.predict(dummy_input, verbose=0, batch_size=1)
-        print("Model warmed up and ready!")
-    except Exception as warmup_exc:
-        print(f"Warning: Model warmup failed ({warmup_exc}), will compile on first request")
-        # Continue anyway - model will compile on first real prediction
+    # Skip warmup on Render to avoid startup timeout
+    # Model will compile on first real request (may be slower but won't timeout)
+    print("Model loaded. Will compile on first prediction request.")
 except OSError as exc:
     raise RuntimeError(f"Unable to load model at {MODEL_PATH}: {exc}") from exc
 
