@@ -1,6 +1,5 @@
 import os
 import time
-import threading
 from typing import Tuple
 
 import cv2
@@ -24,9 +23,6 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-me"
 CORS(app, resources={r"/predict": {"origins": "*"}})
 
-# Initialize model_ready event (will be set after model loads)
-model_ready = threading.Event()
-
 try:
     print("Loading model...")
     # Load model - Keras 3.x will compile on first use if needed
@@ -46,24 +42,7 @@ try:
     else:
         IMG_SIZE = DEFAULT_IMG_SIZE
     
-    # Warm up model in background thread to avoid blocking startup
-    # This compiles the model so first request is faster
-    def warmup_model():
-        """Warm up model in background thread."""
-        try:
-            print("Warming up model in background (this may take a few minutes)...")
-            dummy_input = np.zeros((1, IMG_SIZE[0], IMG_SIZE[1], 3), dtype=np.float32)
-            _ = model.predict(dummy_input, verbose=0, batch_size=1)
-            model_ready.set()
-            print("✅ Model warmed up and ready for predictions!")
-        except Exception as warmup_exc:
-            print(f"⚠️  Model warmup failed ({warmup_exc}), will compile on first request")
-            model_ready.set()  # Still mark as ready, will compile on first request
-    
-    # Start warmup in background thread
-    warmup_thread = threading.Thread(target=warmup_model, daemon=True)
-    warmup_thread.start()
-    print("Model loaded. Warming up in background...")
+    print("✅ Model loaded successfully. Will compile on first prediction request.")
 except OSError as exc:
     raise RuntimeError(f"Unable to load model at {MODEL_PATH}: {exc}") from exc
 
@@ -107,8 +86,7 @@ def health():
     """Health check endpoint - doesn't require model to be ready."""
     return jsonify({
         "status": "healthy",
-        "model_loaded": model is not None,
-        "model_ready": model_ready.is_set()
+        "model_loaded": model is not None
     }), 200
 
 
@@ -117,10 +95,6 @@ def predict():
     file = request.files.get("file")
     if not file or file.filename == "":
         return jsonify({"error": "No image uploaded."}), 400
-
-    # Wait for model warmup to complete (with timeout to avoid hanging forever)
-    if not model_ready.wait(timeout=600):  # 10 minute max wait
-        return jsonify({"error": "Model is still initializing. Please try again in a moment."}), 503
 
     try:
         start = time.perf_counter()
