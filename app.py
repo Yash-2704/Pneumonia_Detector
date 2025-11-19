@@ -5,6 +5,7 @@ from typing import Tuple
 import cv2
 import numpy as np
 from flask import Flask, jsonify, render_template, request
+from flask_cors import CORS
 from tensorflow.keras.models import load_model
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -13,6 +14,7 @@ DEFAULT_IMG_SIZE: Tuple[int, int] = (384, 384)
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-me"
+CORS(app, resources={r"/predict": {"origins": "*"}})
 
 try:
     model = load_model(MODEL_PATH)

@@ -1,4 +1,6 @@
-const API_URL = "/predict";
+const API_URL = window.location.hostname.includes("localhost") || window.location.hostname.includes("127.0.0.1")
+  ? "/predict"
+  : "https://pneumonia-detector-reeb.onrender.com/predict";
 
 const form = document.getElementById("upload-form");
 const fileInput = document.getElementById("file-input");
